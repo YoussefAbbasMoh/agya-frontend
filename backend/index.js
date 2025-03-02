@@ -1,0 +1,109 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
+import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import morgan from "morgan";
+
+// Importing routes
+import authRouter from "./routes/auth.js";
+import otpRouter from "./routes/otp.js";
+import userRoutes from "./routes/userRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
+import commentRoutes from "./routes/commentRoutes.js";
+import replyRoutes from "./routes/replyRoutes.js";
+import articleRoutes from "./routes/articleRoutes.js";
+import activityRoutes from "./routes/activityRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import TagsRoutes from "./routes/TagsRoutes.js";
+import FeaturedRoutes from "./routes/featuredArticleRoute.js";
+import profileuploadRoutes from "./routes/profileuploads.js";
+import articleuploadRoutes from "./routes/articleuploads.js";
+import activityUploadRoutes from "./routes/activityUploads.js";
+import sponsorUploadRoutes from "./routes/sponsorUploads.js";
+import bodyParser from "body-parser"
+
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Resolve the current directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Middleware
+app.use(express.urlencoded({ extended: false }));
+// Increase the limit to 50MB for JSON and URL-encoded requests
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+app.use(express.json());
+// Alternatively, use express.json() directly
+app.use(express.json({ limit: '50mb' }));
+
+app.use(cookieParser());
+app.use(
+  cors({
+    credentials: true,
+    origin: true,
+  })
+);
+
+app.use(morgan("dev")); // Log HTTP requests
+
+// Database Connection
+const connectDB = async () => {
+  try {
+    const mongoURI = process.env.MONGO_URI; // Ensure this is loaded from .env
+    if (!mongoURI) {
+      throw new Error("MongoDB URI is missing!");
+    }
+    await mongoose.connect(mongoURI); // No need for useNewUrlParser or useUnifiedTopology
+    console.log("MongoDB connected successfully!");
+  } catch (err) {
+    console.error("Error connecting to MongoDB:", err.message);
+    process.exit(1);
+  }
+};
+
+// Connect to the database
+connectDB();
+
+// API Routes
+app.use("/api/auth", authRouter); // Authentication routes
+app.use("/api/otp", otpRouter); // OTP routes
+app.use("/api/users", userRoutes); // User-related routes
+app.use("/api/posts", postRoutes); // Post-related routes
+app.use("/api/comments", commentRoutes); // Comment-related routes
+app.use("/api/replies", replyRoutes); // Reply-related routes
+app.use("/api/articles", articleRoutes); // Article-related routes
+app.use("/api/activities", activityRoutes); // Activity-related routes
+app.use("/api/reports", reportRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/tags", TagsRoutes);
+app.use("/api/FeaturedArticles", FeaturedRoutes);
+app.use("/api/uploads/profiles", profileuploadRoutes);
+app.use("/api/uploads/articles", articleuploadRoutes);
+app.use("/api/uploads/activities", activityUploadRoutes);
+app.use("/api/uploads/sponsors", sponsorUploadRoutes);
+
+
+
+// Root Route
+app.get("/", (req, res) => {
+  res.send("Hello, World!");
+});
+
+// Start the server
+const port = process.env.SERVER_PORT || 4000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+export default app; // Use ES Module export

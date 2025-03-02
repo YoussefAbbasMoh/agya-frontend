@@ -1,0 +1,16 @@
+import mongoose from "mongoose";
+
+const AdminSchema = new mongoose.Schema({
+  firstname: { type: String, required: true },
+  lastname: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  image: {
+    type: String,
+    default: "/uploads/default.png", // Default value if no image is provided
+  }
+});
+
+const Admin = mongoose.model("Admin", AdminSchema);
+
+export default Admin;

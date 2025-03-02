@@ -1,0 +1,69 @@
+import { useEffect, useState } from "react";
+import Navbar from "../components/navbar";
+import Sidebar from "../components/sidebar";
+// import { dataset, valueFormatter } from "../assets/data";
+import { format } from "date-fns";
+import PropagateLoader  from "react-spinners/PropagateLoader";
+
+export default function Messages() {
+  const [message, setMessage] = useState([]);
+  useEffect(() => {
+    try {
+      fetch("https://agyademo.uber.space/api/messages/all-messages", {}).then(
+        (response) => {
+          response.json().then((data) => {
+            setMessage(data.data);
+          });
+        }
+      );
+    } catch (e) {
+      console.log(e);
+    }
+  }, []);
+  return (
+    <div className=" flex justify-between">
+      <Sidebar />
+      <div className="flex-1 ml-80 mx-[100px] py-8">
+        <Navbar />
+        <div>
+          <div className=" my-4">
+            <div className=" border-b pb-4">Messages</div>
+            {message === undefined ? (
+              <div className=" block translate-x-[450px] my-16 h-52 w-52 "><PropagateLoader color="#005F6A" size={20} /></div>  
+            ) : message.length === 0 ? (
+              <div className=" block translate-x-[450px] my-16 h-52 w-52 "><PropagateLoader color="#005F6A" size={20} /></div>  
+            ) : (
+              message.map((message) => {
+                return (
+                  <div
+                    key={message._id}
+                    className="  flex items-center  border-b py-4"
+                  >
+                    <img
+                      src={
+                        message.image === "" || message.image === undefined
+                          ? "User-60.png"
+                          : message.image
+                      } // Replace with the actual image URL
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <div className=" ml-2">
+                      <h3>{message.senderName}</h3>
+                      <p className="text-black/30 text-sm">{message.message}</p>
+                    </div>
+                    <div className="text-black/30 flex-1 text-right ">
+                      {message === undefined
+                        ? null
+                        : format(message?.createdAt, "p")}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
